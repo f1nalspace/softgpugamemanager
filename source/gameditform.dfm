@@ -1,9 +1,10 @@
 object frmGameEditor: TfrmGameEditor
   Left = 195
   Top = 109
+  BorderIcons = [biSystemMenu]
   BorderStyle = bsDialog
   Caption = 'Edit Game'
-  ClientHeight = 302
+  ClientHeight = 298
   ClientWidth = 434
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -32,9 +33,9 @@ object frmGameEditor: TfrmGameEditor
   end
   object GroupBox1: TGroupBox
     Left = 8
-    Top = 48
+    Top = 40
     Width = 418
-    Height = 215
+    Height = 217
     Anchors = [akLeft, akTop, akRight, akBottom]
     TabOrder = 0
     object Label2: TLabel
@@ -57,6 +58,20 @@ object frmGameEditor: TfrmGameEditor
       Width = 54
       Height = 13
       Caption = 'Direct3D 9:'
+    end
+    object Label5: TLabel
+      Left = 8
+      Top = 64
+      Width = 68
+      Height = 13
+      Caption = 'Mesa Options:'
+    end
+    object Label6: TLabel
+      Left = 216
+      Top = 64
+      Width = 92
+      Height = 13
+      Caption = 'OpenGlide Options:'
     end
     object cbDDraw: TComboBox
       Left = 8
@@ -95,10 +110,52 @@ object frmGameEditor: TfrmGameEditor
         'wine'
         'custom')
     end
+    object lvMesaOptions: TListView
+      Left = 8
+      Top = 80
+      Width = 195
+      Height = 129
+      Anchors = [akLeft, akTop, akRight, akBottom]
+      Columns = <
+        item
+          Caption = 'Key'
+          Width = 100
+        end
+        item
+          Caption = 'Value'
+          Width = 100
+        end>
+      ReadOnly = True
+      RowSelect = True
+      SortType = stText
+      TabOrder = 3
+      ViewStyle = vsReport
+    end
+    object lvOpenGlideOptions: TListView
+      Left = 216
+      Top = 80
+      Width = 195
+      Height = 129
+      Anchors = [akLeft, akTop, akRight, akBottom]
+      Columns = <
+        item
+          Caption = 'Key'
+          Width = 100
+        end
+        item
+          Caption = 'Value'
+          Width = 100
+        end>
+      ReadOnly = True
+      RowSelect = True
+      SortType = stText
+      TabOrder = 4
+      ViewStyle = vsReport
+    end
   end
   object btnCancel: TButton
     Left = 8
-    Top = 271
+    Top = 267
     Width = 75
     Height = 25
     Anchors = [akLeft, akBottom]
@@ -108,12 +165,25 @@ object frmGameEditor: TfrmGameEditor
   end
   object btnOK: TButton
     Left = 352
-    Top = 270
+    Top = 266
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'OK'
     ModalResult = 1
     TabOrder = 2
+  end
+  object popupMenuMesaOptions: TPopupMenu
+    Left = 96
+    Top = 264
+    object Add1: TMenuItem
+      Caption = 'Add...'
+    end
+    object Edit1: TMenuItem
+      Caption = 'Edit...'
+    end
+    object Remove1: TMenuItem
+      Caption = 'Remove'
+    end
   end
 end

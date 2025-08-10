@@ -7,14 +7,14 @@ uses
   StdCtrls, ComCtrls, Menus;
 
 function ContainsGameInRegistry(Executable: string) : Boolean;
-procedure AddGameToRegistry(Executable : string);
+function AddGameToRegistry(Executable : string) : string;
 function RemoveGameFromRegistry(Executable : string) : Boolean;
 function BuildTextFromValues(const BaseKey, Executable, SubName : string) : string;
 
 implementation
 
 uses
-  Registry;
+  Registry, constants;
 
 function ContainsGameInRegistry(Executable: string) : Boolean;
 var
@@ -23,7 +23,7 @@ begin
   Result := False;
   r := TRegistry.Create(KEY_READ);
   r.RootKey := HKEY_LOCAL_MACHINE;
-  if r.OpenKey('Software\vmdisp9x\apps\exe\', False) then
+  if r.OpenKey(vmdisp9xBaseKey, False) then
   begin
     Result := r.KeyExists( Executable);
     r.CloseKey;
@@ -31,15 +31,17 @@ begin
   r.Free;
 end;
 
-procedure AddGameToRegistry(Executable : string);
+function AddGameToRegistry(Executable : string) : string;
 var
   r : TRegistry;
 begin
+  Result := '';
   r := TRegistry.Create(KEY_READ);
   r.RootKey := HKEY_LOCAL_MACHINE;
-  if r.OpenKey('Software\vmdisp9x\apps\exe\', true) then
+  if r.OpenKey(vmdisp9xBaseKey, true) then
   begin
     r.CreateKey(Executable);
+    Result := IncludeTrailingBackslash(vmdisp9xBaseKey) + Executable;
   end;
   r.Free;
 end;
@@ -51,7 +53,7 @@ begin
   Result := False;
   r := TRegistry.Create(KEY_ALL_ACCESS);
   r.RootKey := HKEY_LOCAL_MACHINE;
-  if r.OpenKey('Software\vmdisp9x\apps\exe\', False) then
+  if r.OpenKey(vmdisp9xBaseKey, False) then
   begin
     if r.KeyExists(Executable) then
     begin

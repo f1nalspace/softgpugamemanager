@@ -41,8 +41,8 @@ ImageBase=4194304
 ExeDescription=
 
 [Directories]
-OutputDir=
-UnitOutputDir=
+OutputDir=..\build
+UnitOutputDir=..\immediates
 PackageDLLOutputDir=
 PackageDCPOutputDir=
 SearchPath=
@@ -81,3 +81,15 @@ OriginalFilename=
 ProductName=
 ProductVersion=1.0.0.0
 Comments=
+
+[HistoryLists\hlUnitAliases]
+Count=1
+Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
+
+[HistoryLists\hlUnitOutputDirectory]
+Count=1
+Item0=..\immediates
+
+[HistoryLists\hlOutputDirectorry]
+Count=1
+Item0=..\build

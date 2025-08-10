@@ -15,6 +15,8 @@ type
     FOptions : array of TGameOption;
     FCount, FCapacity : Integer;
     procedure ResizeIfNeeded;
+    function GetOption(AIndex : Integer) : TGameOption;
+    function BuildDisplayName : string;
   public
     constructor Create;
     destructor Destroy; override;
@@ -23,12 +25,15 @@ type
     function IndexOf(AKey : string) : Integer;
     function Remove(AKey : string) : Boolean;
     function Contains(AKey : string) : Boolean;
+    property Options[Index : Integer] : TGameOption read GetOption;
   published
     property Count : Integer read FCount;
+    property DisplayName : string read BuildDisplayName;
   end;
 
   TGameEntry = class
   private
+    FRegKey : string;
     FExecutable : string;
     FMesaOptions : TGameOptions;
     FOpenGlideOptions : TGameOptions;
@@ -36,8 +41,9 @@ type
     FD3D8Option : string;
     FD3D9Option : string;
   public
-    constructor Create(AExecutable : string; ADDrawOption : string = ''; AD3D8Option : string = ''; AD3D9Option : string = '');
+    constructor Create(ARegKey, AExecutable : string; ADDrawOption : string = ''; AD3D8Option : string = ''; AD3D9Option : string = '');
     destructor Destroy; override;
+    procedure ReadFromRegistry;
   published
     property Executable : string read FExecutable;
     property DDrawOption : string read FDDrawOption write FDDrawOption;
@@ -48,6 +54,9 @@ type
   end;
 
 implementation
+
+uses
+  Registry, Windows, SysUtils;
 
 constructor TGameOptions.Create;
 begin
@@ -151,9 +160,28 @@ begin
   Result := True;
 end;
 
-constructor TGameEntry.Create(AExecutable : string; ADDrawOption : string = ''; AD3D8Option : string = ''; AD3D9Option : string = '');
+function TGameOptions.GetOption(AIndex : Integer) : TGameOption;
+begin
+  Result := FOptions[AIndex];
+end;
+
+function TGameOptions.BuildDisplayName : string;
+var
+  I : Integer;
+begin
+  Result := '';
+  For I := 0 to FCount-1 do
+  begin
+    if I > 0 then
+      Result := ', ';
+    Result := Result + FOptions[I].Key;
+  end;
+end;
+
+constructor TGameEntry.Create(ARegKey, AExecutable : string; ADDrawOption : string = ''; AD3D8Option : string = ''; AD3D9Option : string = '');
 begin
   inherited Create;
+  FRegKey := ARegKey;
   FExecutable := AExecutable;
   FMesaOptions := TGameOptions.Create;
   FOpenGlideOptions := TGameOptions.Create;
@@ -167,6 +195,58 @@ begin
   FOpenGlideOptions.Free;
   FMesaOptions.Free;
   inherited;
+end;
+
+procedure TGameEntry.ReadFromRegistry;
+
+  procedure ReadOptions(ASubName : string; var AOptions : TGameOptions);
+  var
+    r : TRegistry;
+    Lst : TStrings;
+    I : Integer;
+    Key, Value : string;
+  begin
+    r := TRegistry.Create(KEY_READ);
+    r.RootKey := HKEY_LOCAL_MACHINE;
+    if r.OpenKeyReadOnly(IncludeTrailingBackslash(FRegKey) + ASubName) then
+    begin
+      Lst := TStringList.Create;
+      try
+        r.GetValueNames(Lst);
+        for I := 0 to Lst.Count -1 do
+        begin
+          Key := Lst[i];
+          Value := r.ReadString(Key);
+          AOptions.Add(Key, Value);
+        end;
+      finally
+        Lst.Free;
+      end;
+      r.CloseKey;
+    end;
+    r.Free;
+  end;
+
+var
+  r : TRegistry;
+begin
+  Assert(Length(FRegKey) > 0);
+  r := TRegistry.Create(KEY_READ);
+  r.RootKey := HKEY_LOCAL_MACHINE;
+  if r.OpenKeyReadOnly(FRegKey) then
+  begin
+    FDDrawOption := r.ReadString('ddraw');
+    FD3D8Option := r.ReadString('d3d8');
+    FD3D9Option := r.ReadString('d3d9');
+    r.CloseKey;
+
+    FMesaOptions.Clear;
+    ReadOptions('mesa', FMesaOptions);
+
+    FOpenGlideOptions.Clear;
+    ReadOptions('openglide', FOpenGlideOptions);
+  end;
+  r.Free;
 end;
 
 end.

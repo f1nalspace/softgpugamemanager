@@ -43,7 +43,10 @@ implementation
 
 uses
   Registry,
-  utils, gameentry, gameditform;
+  utils,
+  constants,
+  gameentry,
+  gameditform;
 
 function ContainsGameInList(ALV : TListView; AExecutable: string) : Boolean;
 var
@@ -64,11 +67,11 @@ begin
   end;
 end;
 
-function AddGameToList(ALV : TListView; AExecutable : string) : TGameEntry;
+function AddGameToList(ALV : TListView; ARegKey, AExecutable : string) : TGameEntry;
 var
   item : TListItem;
 begin
-  Result := TGameEntry.Create(AExecutable);
+  Result := TGameEntry.Create(ARegKey, AExecutable);
   item := ALV.Items.Add();
   item.Data := Result;
   item.Caption := AExecutable;
@@ -99,22 +102,19 @@ begin
 end;
 
 procedure RefreshGameList(LV : TListView);
-const
-  baseKey : string = 'Software\vmdisp9x\apps\exe\';
 var
   r : TRegistry;
   keyList : TStrings;
   i : integer;
   item : TListItem;
-  keyName  : String;
-  mesa, openGlide : string;
+  keyName, fullKey  : String;
   Entry : TGameEntry;
 begin
   ClearGameList(LV);
 
   r := TRegistry.Create(KEY_READ);
   r.RootKey := HKEY_LOCAL_MACHINE;
-  if r.OpenKeyReadOnly(baseKey) then
+  if r.OpenKeyReadOnly(vmdisp9xBaseKey) then
   begin
     keyList := TStringList.Create;
     r.GetKeyNames(keyList);
@@ -125,28 +125,20 @@ begin
     begin
       keyName := keyList[i];
 
-      Entry := TGameEntry.Create(keyName);
+      fullKey := IncludeTrailingBackslash(vmdisp9xBaseKey) + keyName;
 
-      r.OpenKeyReadOnly(IncludeTrailingBackslash(baseKey) + keyName);
+      Entry := TGameEntry.Create(fullKey, keyName);
 
-      Entry.DDrawOption := r.ReadString('ddraw');
-      Entry.D3D8Option := r.ReadString('d3d8');
-      Entry.D3D9Option := r.ReadString('d3d9');
+      Entry.ReadFromRegistry;
 
       item := LV.Items.Add();
       item.Data := Entry;
       item.Caption := Entry.Executable;
-
-      mesa := BuildTextFromValues(baseKey, keyName, 'mesa');
-      openGlide := BuildTextFromValues(baseKey, keyName, 'openglide');
-      
       item.SubItems.Add(Entry.DDrawOption);
       item.SubItems.Add(Entry.D3D8Option);
       item.SubItems.Add(Entry.D3D9Option);
-      item.SubItems.Add(mesa);
-      item.SubItems.Add(openGlide);
-
-      r.CloseKey();
+      item.SubItems.Add(Entry.MesaOptions.DisplayName);
+      item.SubItems.Add(Entry.OpenGlideOptions.DisplayName);
     end;
     LV.Items.EndUpdate();
 
@@ -157,7 +149,7 @@ end;
 
 procedure TfrmMain.AddGameDialog(Sender: TObject);
 var
-  NewExecutable : string;
+  FullKey, NewExecutable : string;
   FileName : string;
   EditDialog : TfrmGameEditor;
 begin
@@ -175,8 +167,8 @@ begin
     EditDialog.Executable := NewExecutable;
     if EditDialog.ShowModal() = mrOk then
     begin
-      AddGameToList(lvGames, NewExecutable);
-      AddGameToRegistry(NewExecutable);
+      FullKey := AddGameToRegistry(NewExecutable);
+      AddGameToList(lvGames, FullKey, NewExecutable);
     end;
 
   end;
@@ -237,6 +229,9 @@ begin
   EditDialog.Game := Entry;
   if EditDialog.ShowModal() = mrOk then
   begin
+    Entry.DDrawOption := EditDialog.DDrawOption;
+    Entry.D3D8Option := EditDialog.D3D8Option;
+    Entry.D3D9Option := EditDialog.D3D9Option;
   end;
 end;
 

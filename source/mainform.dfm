@@ -3,7 +3,7 @@ object frmMain: TfrmMain
   Top = 107
   Width = 535
   Height = 372
-  Caption = 'SoftGPU Game Manager'
+  Caption = 'SoftGPU Game Manager by Finalspace'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

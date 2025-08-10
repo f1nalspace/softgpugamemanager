@@ -5,7 +5,8 @@ uses
   mainform in 'mainform.pas' {frmMain},
   gameditform in 'gameditform.pas' {frmGameEditor},
   utils in 'utils.pas',
-  gameentry in 'gameentry.pas';
+  gameentry in 'gameentry.pas',
+  constants in 'constants.pas';
 
 {$R *.RES}
 
